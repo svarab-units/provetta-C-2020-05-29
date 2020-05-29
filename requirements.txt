@@ -1,0 +1,47 @@
+processo padre:
+- crea una pipe, i descrittori vanno scritti nella variabile globale pipe_fd
+- inizializza il seed dei numeri casuali col valore 1000: srand(1000);
+- crea il processo figlio
+
+- il processo padre, per 4096 volte, fa questa operazione:
+     genera due valori int con random(), li chiamiamo op1 e op2
+     scrive op1 e op2 sulla pipe (NON scriverli come stringhe di caratteri, mi raccomando)
+
+- il processo padre chiude la pipe
+- il processo padre aspetta la conclusione del processo figlio
+- il processo padre invoca execve() (o simili) per eseguire il seguente comando:
+     /usr/bin/sha512sum output.txt
+
+il risultato restituito da sha512sum e scritto su stdout deve essere:
+99da2d241966d3ffd38729f9c6bf3204cee5fdb2095821440501de83bb27c346c303e5644c4e36e5993193ff08629812a20b220cb0617970ea19cd9c28aef030  output.txt
+(questo permette di verificare la correttezza dello svolgimento dell'esercizio)
+
+processo figlio:
+- crea un file output.txt, troncare la dimensione a zero (file descriptor: int fd);
+- fino a quando incontra EOF sulla pipe:
+     legge op1 e op2 (entrambi di tipo int), crea un thread a cui passa come parametri op1 e op2;
+     il thread fa la differenza tra op1 e op2 (op1-op2) e restituisce il valore;
+     il thread principale fa join sul thread del risultato (thread_result),
+     scrive il risultato (come int, non come stringa di caratteri) in coda al file output.txt
+     continua a leggere la pipe
+- quando incontra EOF sulla pipe, il processo figlio chiude il file output.txt e poi termina.
+
+
+gestire i possibili errori restituiti dalla system call e funzioni di libc utilizzate.
+mettere tutti gli #include necessari.
+
+usate i nomi di variabili e di funzioni indicati qui sotto.
+
+
+variabili globali:
+pipe_fd // file descriptors della pipe
+
+
+#define NUMBER_OF_MESSAGES 4096
+
+nomi di funzioni da utilizzare:
+
+void parent_proc();
+void child_proc();
+
+thread_function_diff
